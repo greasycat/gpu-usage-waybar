@@ -3,6 +3,7 @@ use serde::Deserialize;
 use smart_default::SmartDefault;
 
 use crate::Args;
+use clap::ValueEnum;
 
 #[derive(Default, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -15,9 +16,7 @@ pub struct ConfigFile {
 
 impl ConfigFile {
     pub fn merge_args_into_config(&mut self, args: &Args) -> Result<()> {
-        if args.text_no_memory {
-            self.text.show_memory = false;
-        }
+        self.text.text_items = args.text_items.clone();
 
         if let Some(interval) = args.interval {
             self.general.interval = interval;
@@ -27,12 +26,24 @@ impl ConfigFile {
     }
 }
 
+#[derive(Deserialize, ValueEnum, Clone, Debug)]
+pub enum TextItem {
+    Utilization,
+    Temperature,
+    Memory,
+    FanSpeed,
+    Power,
+}
+
 #[derive(Deserialize, SmartDefault)]
 #[serde(deny_unknown_fields)]
 #[serde(default)]
 pub struct TextConfig {
-    #[default(true)]
-    pub show_memory: bool,
+    #[default(Vec::from([
+        TextItem::Utilization,
+        TextItem::Memory,
+    ]))]
+    pub text_items: Vec<TextItem>,
 }
 
 #[derive(Deserialize, SmartDefault)]

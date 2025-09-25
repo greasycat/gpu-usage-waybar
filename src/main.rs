@@ -16,7 +16,7 @@ use serde::Serialize;
 
 use crate::{
     amd::{AmdGpuStatus, AmdSysFS},
-    config::structs::ConfigFile,
+    config::structs::{ConfigFile, TextItem},
     gpu_status::{GpuStatus, GpuStatusData},
     nvidia::NvidiaGpuStatus,
 };
@@ -51,10 +51,12 @@ fn get_instance() -> &'static Instance {
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 pub struct Args {
-    /// Add this flag if you don't want to display memory information in the
-    /// text output.
-    #[arg(long, default_value_t = false)]
-    text_no_memory: bool,
+    /// Specify which text items to display
+    #[arg(short, long, value_enum, num_args = 1.., default_values_t = vec![
+        TextItem::Utilization,
+        TextItem::Memory,
+    ])]
+    text_items: Vec<TextItem>,
 
     /// Polling interval in milliseconds
     #[arg(long)]

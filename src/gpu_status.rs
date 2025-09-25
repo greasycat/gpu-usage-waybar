@@ -3,6 +3,7 @@ use color_eyre::eyre::Result;
 use strum::Display;
 
 use crate::config::structs::ConfigFile;
+use crate::config::structs::TextItem;
 
 #[derive(Default)]
 pub struct GpuStatusData {
@@ -78,10 +79,27 @@ impl GpuStatusData {
 
         let mut text = String::new();
 
-        conditional_append!(text, "{}%", self.gpu_utilization);
-
-        if config.text.show_memory {
-            conditional_append!(text, "|{}%", self.compute_mem_usage());
+        for (i, item) in config.text.text_items.iter().enumerate() {
+            if i != 0 {
+                text.push('|');
+            }
+            match item {
+                TextItem::Utilization => {
+                    conditional_append!(text, "{}%", self.gpu_utilization);
+                }
+                TextItem::Memory => {
+                    conditional_append!(text, "{}%", self.compute_mem_usage());
+                }
+                TextItem::Temperature => {
+                    conditional_append!(text, "{}°C", self.temperature);
+                }
+                TextItem::Power => {
+                    conditional_append!(text, "{}W", self.power.map(|v| v.round() as u64));
+                }
+                TextItem::FanSpeed => {
+                    conditional_append!(text, "{}%", self.fan_speed);
+                }
+            }
         }
 
         text
